@@ -1,9 +1,9 @@
 import { VRAGEN } from "../../src/data/vragen.js";
 
 // Bepaalt met de Anthropic API welke vragen uit de kandidaat vragenset
-// relevant zijn voor het aangeleverde document.
+// relevant zijn voor het aangeleverde document, en waarom.
 // Verwacht een POST met JSON body: { tekst }
-// Geeft terug: { relevanteVragen: [id, id, ...] } of { fout }
+// Geeft terug: { relevanteVragen: [id, ...], beoordelingen: [{id, relevant, reden}, ...] } of { fout }
 
 export async function handler(event) {
   if (event.httpMethod !== "POST") {
@@ -20,9 +20,6 @@ export async function handler(event) {
       }),
     };
   }
-  console.log(
-    `bepaal-vragen: key begint met "${apiKey.slice(0, 15)}", eindigt op "${apiKey.slice(-6)}", lengte ${apiKey.length}, bevat spatie: ${apiKey.includes(" ")}`
-  );
 
   let payload;
   try {
@@ -43,7 +40,10 @@ export async function handler(event) {
 
 ${vragenOverzicht}
 
-Lees het aangeleverde document en bepaal welke van deze vragen daadwerkelijk relevant zijn om te stellen. Sla een vraag over als het antwoord al duidelijk uit de tekst blijkt, of als de vraag niet van toepassing is op dit type document. Antwoord uitsluitend met geldige JSON in dit formaat, zonder verdere uitleg: {"relevanteVragen": ["id1", "id2"]}`;
+Lees het aangeleverde document en beoordeel voor elk van deze vragen, dus voor alle vragen uit de lijst hierboven, of die relevant is om te stellen. Een vraag is niet relevant als het antwoord al duidelijk uit de tekst blijkt, of als de vraag niet van toepassing is op dit type document. Geef bij elke vraag een korte reden, in maximaal één zin, waarom je 'm wel of niet relevant vindt.
+
+Antwoord uitsluitend met geldige JSON in dit formaat, zonder verdere uitleg, met exact één regel per vraag uit de lijst:
+{"beoordelingen": [{"id": "typeMiddel", "relevant": true, "reden": "korte reden hier"}, {"id": "doelgroep", "relevant": false, "reden": "korte reden hier"}]}`;
 
   try {
     const response = await fetch("https://api.anthropic.com/v1/messages", {
@@ -55,7 +55,8 @@ Lees het aangeleverde document en bepaal welke van deze vragen daadwerkelijk rel
       },
       body: JSON.stringify({
         model: "claude-sonnet-5",
-        max_tokens: 500,
+        max_tokens: 1200,
+        thinking: { type: "disabled" },
         system: systeemPrompt,
         messages: [{ role: "user", content: stukTekst }],
       }),
@@ -73,22 +74,28 @@ Lees het aangeleverde document en bepaal welke van deze vragen daadwerkelijk rel
     const data = await response.json();
     const tekstAntwoord = data.content?.find((blok) => blok.type === "text")?.text ?? "";
 
-    let relevanteVragen;
+    let beoordelingen;
     try {
       const schoongemaakt = tekstAntwoord.replace(/```json|```/g, "").trim();
       const geparsed = JSON.parse(schoongemaakt);
-      relevanteVragen = geparsed.relevanteVragen;
+      beoordelingen = geparsed.beoordelingen;
     } catch {
-      relevanteVragen = VRAGEN.map((v) => v.id);
+      beoordelingen = null;
     }
 
-    if (!Array.isArray(relevanteVragen) || relevanteVragen.length === 0) {
-      relevanteVragen = VRAGEN.map((v) => v.id);
+    if (!Array.isArray(beoordelingen) || beoordelingen.length === 0) {
+      beoordelingen = VRAGEN.map((v) => ({
+        id: v.id,
+        relevant: true,
+        reden: "Kon de afweging niet bepalen, deze vraag wordt daarom voor de zekerheid getoond.",
+      }));
     }
+
+    const relevanteVragen = beoordelingen.filter((b) => b.relevant).map((b) => b.id);
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ relevanteVragen }),
+      body: JSON.stringify({ relevanteVragen, beoordelingen }),
     };
   } catch (err) {
     console.error("bepaal-vragen: onverwachte fout", err);

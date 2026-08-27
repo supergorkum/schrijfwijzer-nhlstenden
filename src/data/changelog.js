@@ -12,10 +12,13 @@ export const CHANGELOG = [
   { versie: "0.11.0", datum: "2026-08-27", beschrijving: "Diagnostische logging voor mislukte AI aanroepen." },
   { versie: "0.12.0", datum: "2026-08-27", beschrijving: "Netlify AI Gateway geïdentificeerd en uitgezet als oorzaak van de ongeldige key." },
   { versie: "0.13.0", datum: "2026-08-27", beschrijving: "NHL Stenden huisstijl toegepast." },
+  { versie: "0.14.0", datum: "2026-08-27", beschrijving: "Klikbare academielijst." },
+  { versie: "0.15.0", datum: "2026-08-27", beschrijving: "Extra diensten als knoppen." },
+  { versie: "0.16.0", datum: "2026-08-27", beschrijving: "Thinking uitgezet, meer ruimte voor het antwoord." },
   {
-    versie: "0.14.0",
+    versie: "0.17.0",
     datum: "2026-08-27",
     beschrijving:
-      "De academie vraag is nu een klikbare lijst met de echte academienamen uit de brandmanual, met een optie om zelf een andere dienst in te typen.",
+      "De AI geeft nu bij elke vraag een korte reden waarom deze wel of niet gesteld wordt, zichtbaar via een inklapbaar blok bij stap 2.",
   },
 ];

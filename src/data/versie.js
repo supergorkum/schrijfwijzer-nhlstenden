@@ -1,2 +1,2 @@
-// PATCH_16_THINKING_UIT
-export const VERSIE = "0.16.0";
+// PATCH_19_GEEN_FLITS
+export const VERSIE = "0.19.0";

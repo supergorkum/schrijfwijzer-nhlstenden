@@ -7,6 +7,8 @@ export default function VragenStap({ document, onVolgende, onTerug }) {
   const [teTonenVragen, setTeTonenVragen] = useState([]);
   const [antwoorden, setAntwoorden] = useState({});
   const [andersActief, setAndersActief] = useState({});
+  const [beoordelingen, setBeoordelingen] = useState([]);
+  const [afwegingZichtbaar, setAfwegingZichtbaar] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -28,16 +30,24 @@ export default function VragenStap({ document, onVolgende, onTerug }) {
         if (!response.ok) {
           setFoutmelding(data.fout || "Er ging iets mis bij het bepalen van de vragen.");
           setTeTonenVragen(VRAGEN);
+          setBeoordelingen([]);
         } else {
           const ids = data.relevanteVragen ?? [];
           const gefilterd = VRAGEN.filter((v) => ids.includes(v.id));
           setTeTonenVragen(gefilterd.length > 0 ? gefilterd : VRAGEN);
+          setBeoordelingen(data.beoordelingen ?? []);
         }
+
+        // Alleen hier, na een echt afgeronde aanroep, mag laden op false.
+        // Een afgebroken, dubbele aanroep in ontwikkelmodus stopt hierboven
+        // al bij de AbortError hieronder, en laat laden dus terecht op true
+        // staan tot de echte aanroep is afgerond.
+        setLaden(false);
       } catch (err) {
         if (err.name === "AbortError") return;
         setFoutmelding("Kon geen verbinding maken om de vragen te bepalen. Alle vragen worden getoond.");
         setTeTonenVragen(VRAGEN);
-      } finally {
+        setBeoordelingen([]);
         setLaden(false);
       }
     }
@@ -73,7 +83,43 @@ export default function VragenStap({ document, onVolgende, onTerug }) {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-lg font-bold text-nhlblauw">Een paar vragen</h2>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <h2 className="text-lg font-bold text-nhlblauw">Een paar vragen</h2>
+
+        {beoordelingen.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setAfwegingZichtbaar((huidig) => !huidig)}
+            className="text-base font-bold px-5 py-2.5 rounded-full bg-nhlteal text-white shadow-sm hover:bg-nhlteal/90 transition-colors"
+          >
+            {afwegingZichtbaar ? "Verberg afwegingen" : "Toon afwegingen"}
+          </button>
+        )}
+      </div>
+
+      {afwegingZichtbaar && beoordelingen.length > 0 && (
+        <div className="space-y-2">
+          {beoordelingen.map((b) => {
+            const vraagDefinitie = VRAGEN.find((v) => v.id === b.id);
+            return (
+              <div
+                key={b.id}
+                className={`text-sm rounded-lg p-3 border ${
+                  b.relevant
+                    ? "bg-teal-50 border-teal-100 text-teal-900"
+                    : "bg-gray-50 border-gray-100 text-gray-600"
+                }`}
+              >
+                <p className="font-medium">
+                  {b.relevant ? "Gesteld: " : "Overgeslagen: "}
+                  {vraagDefinitie?.vraag ?? b.id}
+                </p>
+                <p className="mt-0.5">{b.reden}</p>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {foutmelding && (
         <p className="text-sm text-nhlrood bg-red-50 border border-red-200 rounded-lg p-3">
@@ -142,7 +188,7 @@ export default function VragenStap({ document, onVolgende, onTerug }) {
         );
       })}
 
-      <div className="flex gap-3 pt-4">
+      <div className="flex gap-3 pt-2">
         <button
           className="px-5 py-2 rounded-full border border-gray-300 text-sm font-medium text-gray-600 hover:bg-gray-50"
           onClick={onTerug}
