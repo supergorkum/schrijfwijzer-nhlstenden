@@ -17,4 +17,10 @@ export const CHANGELOG = [
     beschrijving:
       "Upload scherm werkt nu echt. Een Netlify Function haalt tekst uit Word, PDF en tekst bestanden, met foutafhandeling bij niet ondersteunde of onleesbare bestanden.",
   },
+  {
+    versie: "0.4.0",
+    datum: "2026-08-27",
+    beschrijving:
+      "Vragenflow werkt nu echt. Een Netlify Function met de Anthropic API bepaalt welke vragen relevant zijn voor het document, en het formulier laat alleen die vragen zien.",
+  },
 ];

@@ -1,25 +1,112 @@
+import { useEffect, useState } from "react";
+import { VRAGEN } from "../data/vragen.js";
+
 export default function VragenStap({ document, onVolgende, onTerug }) {
-  const aantalWoorden = document?.tekst
-    ? document.tekst.split(/\s+/).filter(Boolean).length
-    : 0;
+  const [laden, setLaden] = useState(true);
+  const [foutmelding, setFoutmelding] = useState(null);
+  const [teTonenVragen, setTeTonenVragen] = useState([]);
+  const [antwoorden, setAntwoorden] = useState({});
+
+  useEffect(() => {
+    let actief = true;
+
+    async function bepaalVragen() {
+      setLaden(true);
+      setFoutmelding(null);
+
+      try {
+        const response = await fetch("/.netlify/functions/bepaal-vragen", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tekst: document?.tekst ?? "" }),
+        });
+
+        const data = await response.json();
+
+        if (!actief) return;
+
+        if (!response.ok) {
+          setFoutmelding(data.fout || "Er ging iets mis bij het bepalen van de vragen.");
+          setTeTonenVragen(VRAGEN);
+        } else {
+          const ids = data.relevanteVragen ?? [];
+          const gefilterd = VRAGEN.filter((v) => ids.includes(v.id));
+          setTeTonenVragen(gefilterd.length > 0 ? gefilterd : VRAGEN);
+        }
+      } catch (err) {
+        if (!actief) return;
+        setFoutmelding("Kon geen verbinding maken om de vragen te bepalen. Alle vragen worden getoond.");
+        setTeTonenVragen(VRAGEN);
+      } finally {
+        if (actief) setLaden(false);
+      }
+    }
+
+    bepaalVragen();
+
+    return () => {
+      actief = false;
+    };
+  }, [document]);
+
+  function beantwoord(id, waarde) {
+    setAntwoorden((huidig) => ({ ...huidig, [id]: waarde }));
+  }
+
+  if (laden) {
+    return <p className="text-gray-500">Bezig met het bepalen van de relevante vragen.</p>;
+  }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <h2 className="text-lg font-semibold">Stap 2. Vragen</h2>
 
-      {document && (
-        <div className="bg-gray-50 border border-gray-200 rounded p-3 text-sm text-gray-700">
-          <p className="font-medium">{document.bestandsNaam}</p>
-          <p>{aantalWoorden} woorden gevonden.</p>
-        </div>
+      {foutmelding && (
+        <p className="text-sm text-nhlrood bg-red-50 border border-red-200 rounded p-3">
+          {foutmelding}
+        </p>
       )}
 
-      <p className="text-gray-600">
-        Hier komen straks de dynamische vragen over academie, doelgroep,
-        medium en tone of voice. Nu nog een placeholder.
-      </p>
+      {teTonenVragen.length === 0 && (
+        <p className="text-gray-600">
+          Er zijn geen aanvullende vragen nodig voor dit document.
+        </p>
+      )}
 
-      <div className="flex gap-3">
+      {teTonenVragen.map((v) => (
+        <div key={v.id} className="space-y-2">
+          <p className="font-medium">{v.vraag}</p>
+
+          {v.opties ? (
+            <div className="flex flex-wrap gap-2">
+              {v.opties.map((optie) => (
+                <button
+                  key={optie}
+                  type="button"
+                  onClick={() => beantwoord(v.id, optie)}
+                  className={`px-3 py-1.5 rounded border text-sm ${
+                    antwoorden[v.id] === optie
+                      ? "bg-nhlblauw text-white border-nhlblauw"
+                      : "border-gray-300 text-gray-700"
+                  }`}
+                >
+                  {optie}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <input
+              type="text"
+              value={antwoorden[v.id] ?? ""}
+              onChange={(e) => beantwoord(v.id, e.target.value)}
+              className="w-full border border-gray-300 rounded p-2 text-sm"
+              placeholder="Vul hier je antwoord in"
+            />
+          )}
+        </div>
+      ))}
+
+      <div className="flex gap-3 pt-2">
         <button
           className="px-4 py-2 rounded border border-gray-300"
           onClick={onTerug}
@@ -28,7 +115,7 @@ export default function VragenStap({ document, onVolgende, onTerug }) {
         </button>
         <button
           className="px-4 py-2 rounded bg-nhlblauw text-white"
-          onClick={() => onVolgende({})}
+          onClick={() => onVolgende(antwoorden)}
         >
           Verder
         </button>

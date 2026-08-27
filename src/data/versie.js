@@ -1,2 +1,2 @@
-// PATCH_03_UPLOAD_EXTRACTIE
-export const VERSIE = "0.3.0";
+// PATCH_04_VRAGENFLOW
+export const VERSIE = "0.4.0";
