@@ -8,7 +8,7 @@ export default function VragenStap({ document, onVolgende, onTerug }) {
   const [antwoorden, setAntwoorden] = useState({});
 
   useEffect(() => {
-    let actief = true;
+    const controller = new AbortController();
 
     async function bepaalVragen() {
       setLaden(true);
@@ -19,11 +19,10 @@ export default function VragenStap({ document, onVolgende, onTerug }) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ tekst: document?.tekst ?? "" }),
+          signal: controller.signal,
         });
 
         const data = await response.json();
-
-        if (!actief) return;
 
         if (!response.ok) {
           setFoutmelding(data.fout || "Er ging iets mis bij het bepalen van de vragen.");
@@ -34,18 +33,18 @@ export default function VragenStap({ document, onVolgende, onTerug }) {
           setTeTonenVragen(gefilterd.length > 0 ? gefilterd : VRAGEN);
         }
       } catch (err) {
-        if (!actief) return;
+        if (err.name === "AbortError") return;
         setFoutmelding("Kon geen verbinding maken om de vragen te bepalen. Alle vragen worden getoond.");
         setTeTonenVragen(VRAGEN);
       } finally {
-        if (actief) setLaden(false);
+        setLaden(false);
       }
     }
 
     bepaalVragen();
 
     return () => {
-      actief = false;
+      controller.abort();
     };
   }, [document]);
 

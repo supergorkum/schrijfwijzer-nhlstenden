@@ -1,2 +1,2 @@
-// PATCH_05_HERSCHRIJVEN_EXPORT
-export const VERSIE = "0.5.0";
+// PATCH_12_KEY_DIAGNOSE
+export const VERSIE = "0.12.0";

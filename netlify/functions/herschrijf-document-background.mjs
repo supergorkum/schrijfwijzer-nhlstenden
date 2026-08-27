@@ -1,11 +1,7 @@
 import { Document, Packer, Paragraph } from "docx";
+import { haalTakenStoreOp } from "./blobs-store.mjs";
 import { SCHRIJFWIJZER_REGELS } from "../../src/data/schrijfwijzerRegels.js";
 import { TONE_OF_VOICE } from "../../src/data/toneOfVoice.js";
-
-// Herschrijft een document op basis van de schrijfwijzer regels en de
-// antwoorden uit de vragenstap, en levert het resultaat als Word bestand.
-// Verwacht een POST met JSON body: { tekst, antwoorden }
-// Geeft terug: { herschrevenTekst, bestandBase64, bestandsNaam } of { fout }
 
 function bouwSysteemPrompt(antwoorden) {
   const regelsTekst = SCHRIJFWIJZER_REGELS.map((r) => `- ${r.titel}: ${r.regel}`).join("\n");
@@ -42,48 +38,39 @@ Herschrijf het aangeleverde document volledig volgens deze regels. Geef uitsluit
 }
 
 function bouwDocxBuffer(tekst) {
-  const alineas = tekst.split("\n").map(
-    (regel) =>
-      new Paragraph({
-        text: regel,
-      })
-  );
-
-  const doc = new Document({
-    sections: [{ children: alineas }],
-  });
-
+  const alineas = tekst.split("\n").map((regel) => new Paragraph({ text: regel }));
+  const doc = new Document({ sections: [{ children: alineas }] });
   return Packer.toBuffer(doc);
 }
 
 export async function handler(event) {
-  if (event.httpMethod !== "POST") {
-    return { statusCode: 405, body: JSON.stringify({ fout: "Alleen POST is toegestaan." }) };
-  }
-
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
-        fout: "Er is geen ANTHROPIC_API_KEY ingesteld. Zet deze in de Netlify omgevingsvariabelen.",
-      }),
-    };
-  }
+  const store = haalTakenStoreOp();
 
   let payload;
   try {
     payload = JSON.parse(event.body || "{}");
   } catch {
-    return { statusCode: 400, body: JSON.stringify({ fout: "Ongeldige aanvraag." }) };
+    return { statusCode: 400 };
   }
 
-  const { tekst, antwoorden } = payload;
-  if (!tekst) {
-    return { statusCode: 400, body: JSON.stringify({ fout: "Er is geen documenttekst meegestuurd." }) };
+  const { jobId, tekst, antwoorden } = payload;
+  if (!jobId || !tekst) {
+    return { statusCode: 400 };
   }
 
   try {
+    await store.setJSON(jobId, { status: "bezig" });
+
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) {
+      console.error("herschrijf-document-background: ANTHROPIC_API_KEY ontbreekt in de omgeving.");
+      await store.setJSON(jobId, {
+        status: "fout",
+        fout: "Er is geen ANTHROPIC_API_KEY ingesteld. Zet deze in de Netlify omgevingsvariabelen.",
+      });
+      return { statusCode: 200 };
+    }
+
     const systeemPrompt = bouwSysteemPrompt(antwoorden || {});
 
     const response = await fetch("https://api.anthropic.com/v1/messages", {
@@ -103,37 +90,39 @@ export async function handler(event) {
 
     if (!response.ok) {
       const foutTekst = await response.text();
-      return {
-        statusCode: 502,
-        body: JSON.stringify({ fout: "De AI dienst gaf een fout terug.", details: foutTekst }),
-      };
+      console.error(`herschrijf-document-background: Anthropic API gaf status ${response.status} terug: ${foutTekst}`);
+      await store.setJSON(jobId, {
+        status: "fout",
+        fout: "De AI dienst gaf een fout terug.",
+        details: foutTekst,
+        httpStatus: response.status,
+      });
+      return { statusCode: 200 };
     }
 
     const data = await response.json();
     const herschrevenTekst = data.content?.find((blok) => blok.type === "text")?.text?.trim();
 
     if (!herschrevenTekst) {
-      return {
-        statusCode: 502,
-        body: JSON.stringify({ fout: "De AI gaf geen bruikbare tekst terug." }),
-      };
+      console.error("herschrijf-document-background: geen tekst in Anthropic response", JSON.stringify(data));
+      await store.setJSON(jobId, { status: "fout", fout: "De AI gaf geen bruikbare tekst terug." });
+      return { statusCode: 200 };
     }
 
     const docxBuffer = await bouwDocxBuffer(herschrevenTekst);
     const bestandBase64 = docxBuffer.toString("base64");
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        herschrevenTekst,
-        bestandBase64,
-        bestandsNaam: "schrijfwijzer-resultaat.docx",
-      }),
-    };
+    await store.setJSON(jobId, {
+      status: "klaar",
+      herschrevenTekst,
+      bestandBase64,
+      bestandsNaam: "schrijfwijzer-resultaat.docx",
+    });
+
+    return { statusCode: 200 };
   } catch (err) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ fout: "Er ging iets mis bij het herschrijven van het document.", details: String(err) }),
-    };
+    console.error("herschrijf-document-background: onverwachte fout", err);
+    await store.setJSON(jobId, { status: "fout", fout: "Er ging iets mis bij het herschrijven.", details: String(err) });
+    return { statusCode: 200 };
   }
 }

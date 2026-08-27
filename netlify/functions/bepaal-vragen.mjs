@@ -12,6 +12,7 @@ export async function handler(event) {
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
+    console.error("bepaal-vragen: ANTHROPIC_API_KEY ontbreekt in de omgeving.");
     return {
       statusCode: 500,
       body: JSON.stringify({
@@ -19,6 +20,9 @@ export async function handler(event) {
       }),
     };
   }
+  console.log(
+    `bepaal-vragen: key begint met "${apiKey.slice(0, 15)}", eindigt op "${apiKey.slice(-6)}", lengte ${apiKey.length}, bevat spatie: ${apiKey.includes(" ")}`
+  );
 
   let payload;
   try {
@@ -59,9 +63,10 @@ Lees het aangeleverde document en bepaal welke van deze vragen daadwerkelijk rel
 
     if (!response.ok) {
       const foutTekst = await response.text();
+      console.error(`bepaal-vragen: Anthropic API gaf status ${response.status} terug: ${foutTekst}`);
       return {
         statusCode: 502,
-        body: JSON.stringify({ fout: "De AI dienst gaf een fout terug.", details: foutTekst }),
+        body: JSON.stringify({ fout: "De AI dienst gaf een fout terug.", details: foutTekst, status: response.status }),
       };
     }
 
@@ -86,6 +91,7 @@ Lees het aangeleverde document en bepaal welke van deze vragen daadwerkelijk rel
       body: JSON.stringify({ relevanteVragen }),
     };
   } catch (err) {
+    console.error("bepaal-vragen: onverwachte fout", err);
     return {
       statusCode: 500,
       body: JSON.stringify({ fout: "Er ging iets mis bij het bepalen van de vragen.", details: String(err) }),
