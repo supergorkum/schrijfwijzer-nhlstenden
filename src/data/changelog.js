@@ -11,4 +11,10 @@ export const CHANGELOG = [
     beschrijving:
       "Kennisbank toegevoegd. Schrijfwijzer regels, academienamen, tone of voice en een kandidaat vragenset staan nu als structured data in het project. Brondocumenten gekopieerd naar de bronnen map.",
   },
+  {
+    versie: "0.3.0",
+    datum: "2026-08-27",
+    beschrijving:
+      "Upload scherm werkt nu echt. Een Netlify Function haalt tekst uit Word, PDF en tekst bestanden, met foutafhandeling bij niet ondersteunde of onleesbare bestanden.",
+  },
 ];

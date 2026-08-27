@@ -1,2 +1,2 @@
-// PATCH_02_KENNISBANK
-export const VERSIE = "0.2.0";
+// PATCH_03_UPLOAD_EXTRACTIE
+export const VERSIE = "0.3.0";
