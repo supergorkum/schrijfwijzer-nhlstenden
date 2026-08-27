@@ -23,4 +23,10 @@ export const CHANGELOG = [
     beschrijving:
       "Vragenflow werkt nu echt. Een Netlify Function met de Anthropic API bepaalt welke vragen relevant zijn voor het document, en het formulier laat alleen die vragen zien.",
   },
+  {
+    versie: "0.5.0",
+    datum: "2026-08-27",
+    beschrijving:
+      "AI herschrijving werkt nu echt. Het document wordt herschreven volgens de schrijfwijzer regels en, indien gekozen, de tone of voice van the originals, en is te downloaden als Word bestand.",
+  },
 ];

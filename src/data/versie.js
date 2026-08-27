@@ -1,2 +1,2 @@
-// PATCH_04_VRAGENFLOW
-export const VERSIE = "0.4.0";
+// PATCH_05_HERSCHRIJVEN_EXPORT
+export const VERSIE = "0.5.0";
