@@ -1,8 +1,12 @@
-// PATCH_02_KENNISBANK
+// PATCH_14_ACADEMIELIJST
 // Kandidaat vragenset voor de vragenflow, maximaal tien vragen.
 // relevantWanneer is een korte beschrijving, de daadwerkelijke selectie
 // van welke vragen getoond worden gebeurt later door de AI stap op basis
 // van de inhoud van het aangeleverde document.
+
+import { ACADEMIES } from "./academies.js";
+
+const ACADEMIENAMEN = ACADEMIES.map((a) => a.nl);
 
 export const VRAGEN = [
   {
@@ -27,7 +31,14 @@ export const VRAGEN = [
   {
     id: "academieOfDienst",
     vraag: "Gaat dit document over een specifieke academie of dienst? Zo ja, welke?",
-    opties: null,
+    opties: [
+      ...ACADEMIENAMEN,
+      "Dienst Marketing & Communicatie",
+      "Team Concept & Creatie",
+      "Een andere dienst, namelijk",
+      "Niet van toepassing",
+    ],
+    laatVrijeInvoerToe: "Een andere dienst, namelijk",
     regelsGekoppeld: ["academienamen"],
   },
   {

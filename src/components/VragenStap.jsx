@@ -6,6 +6,7 @@ export default function VragenStap({ document, onVolgende, onTerug }) {
   const [foutmelding, setFoutmelding] = useState(null);
   const [teTonenVragen, setTeTonenVragen] = useState([]);
   const [antwoorden, setAntwoorden] = useState({});
+  const [andersActief, setAndersActief] = useState({});
 
   useEffect(() => {
     const controller = new AbortController();
@@ -48,7 +49,21 @@ export default function VragenStap({ document, onVolgende, onTerug }) {
     };
   }, [document]);
 
-  function beantwoord(id, waarde) {
+  function kiesOptie(vraag, optie) {
+    if (vraag.laatVrijeInvoerToe && optie === vraag.laatVrijeInvoerToe) {
+      setAndersActief((huidig) => ({ ...huidig, [vraag.id]: true }));
+      setAntwoorden((huidig) => ({ ...huidig, [vraag.id]: "" }));
+      return;
+    }
+    setAndersActief((huidig) => ({ ...huidig, [vraag.id]: false }));
+    setAntwoorden((huidig) => ({ ...huidig, [vraag.id]: optie }));
+  }
+
+  function typVrijeInvoer(id, waarde) {
+    setAntwoorden((huidig) => ({ ...huidig, [id]: waarde }));
+  }
+
+  function beantwoordVrijeVraag(id, waarde) {
     setAntwoorden((huidig) => ({ ...huidig, [id]: waarde }));
   }
 
@@ -72,38 +87,60 @@ export default function VragenStap({ document, onVolgende, onTerug }) {
         </p>
       )}
 
-      {teTonenVragen.map((v) => (
-        <div key={v.id} className="space-y-2">
-          <p className="font-semibold text-gray-700">{v.vraag}</p>
+      {teTonenVragen.map((v) => {
+        const isAndersActief = Boolean(andersActief[v.id]);
 
-          {v.opties ? (
-            <div className="flex flex-wrap gap-2">
-              {v.opties.map((optie) => (
-                <button
-                  key={optie}
-                  type="button"
-                  onClick={() => beantwoord(v.id, optie)}
-                  className={`px-4 py-1.5 rounded-full border text-sm font-medium transition-colors ${
-                    antwoorden[v.id] === optie
-                      ? "bg-nhlblauw text-white border-nhlblauw"
-                      : "border-gray-300 text-gray-600 hover:border-nhlblauw hover:text-nhlblauw"
-                  }`}
-                >
-                  {optie}
-                </button>
-              ))}
-            </div>
-          ) : (
-            <input
-              type="text"
-              value={antwoorden[v.id] ?? ""}
-              onChange={(e) => beantwoord(v.id, e.target.value)}
-              className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-nhlteal focus:border-transparent"
-              placeholder="Vul hier je antwoord in"
-            />
-          )}
-        </div>
-      ))}
+        return (
+          <div key={v.id} className="space-y-2">
+            <p className="font-semibold text-gray-700">{v.vraag}</p>
+
+            {v.opties ? (
+              <div className="space-y-2">
+                <div className="flex flex-wrap gap-2">
+                  {v.opties.map((optie) => {
+                    const actief = isAndersActief
+                      ? optie === v.laatVrijeInvoerToe
+                      : antwoorden[v.id] === optie;
+                    return (
+                      <button
+                        key={optie}
+                        type="button"
+                        onClick={() => kiesOptie(v, optie)}
+                        className={`px-4 py-1.5 rounded-full border text-sm font-medium transition-colors ${
+                          actief
+                            ? "bg-nhlblauw text-white border-nhlblauw"
+                            : "border-gray-300 text-gray-600 hover:border-nhlblauw hover:text-nhlblauw"
+                        }`}
+                      >
+                        {optie}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {isAndersActief && (
+                  <input
+                    type="text"
+                    autoFocus
+                    value={antwoorden[v.id] ?? ""}
+                    onChange={(e) => typVrijeInvoer(v.id, e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-nhlteal focus:border-transparent"
+                    placeholder="Vul hier de naam van de dienst in"
+                  />
+                )}
+              </div>
+            ) : (
+              <input
+                type="text"
+                value={antwoorden[v.id] ?? ""}
+                onChange={(e) => beantwoordVrijeVraag(v.id, e.target.value)}
+                className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-nhlteal focus:border-transparent"
+                placeholder="Vul hier je antwoord in"
+              />
+            )}
+          </div>
+        );
+      })}
 
       <div className="flex gap-3 pt-4">
         <button
