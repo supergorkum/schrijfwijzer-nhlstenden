@@ -11,6 +11,9 @@ export default {
         nhlgroen: "#00784f",
         nhlroze: "#ff8cb2",
       },
+      fontFamily: {
+        sans: ['"Cera Pro"', '"Poppins"', "ui-sans-serif", "system-ui", "sans-serif"],
+      },
     },
   },
   plugins: [],

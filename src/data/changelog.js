@@ -9,10 +9,12 @@ export const CHANGELOG = [
   { versie: "0.8.0", datum: "2026-08-27", beschrijving: "Bestandsgrootte controle." },
   { versie: "0.9.0", datum: "2026-08-27", beschrijving: "Handmatige Blobs configuratie met site ID en token." },
   { versie: "0.10.0", datum: "2026-08-27", beschrijving: "Herstel van het pollen op het resultaat." },
+  { versie: "0.11.0", datum: "2026-08-27", beschrijving: "Diagnostische logging voor mislukte AI aanroepen." },
+  { versie: "0.12.0", datum: "2026-08-27", beschrijving: "Netlify AI Gateway geïdentificeerd en uitgezet als oorzaak van de ongeldige key." },
   {
-    versie: "0.11.0",
+    versie: "0.13.0",
     datum: "2026-08-27",
     beschrijving:
-      "Diagnostische logging toegevoegd voor mislukte Anthropic API aanroepen, zichtbaar in de terminal en, bij een fout, ook als details in het scherm zelf.",
+      "NHL Stenden huisstijl toegepast: kleuren, typografie en vormentaal uit de brandmanual, stap indicator, en een opgefriste opmaak van alle drie de stappen.",
   },
 ];

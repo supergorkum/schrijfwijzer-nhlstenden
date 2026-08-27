@@ -58,10 +58,10 @@ export default function VragenStap({ document, onVolgende, onTerug }) {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-lg font-semibold">Stap 2. Vragen</h2>
+      <h2 className="text-lg font-bold text-nhlblauw">Een paar vragen</h2>
 
       {foutmelding && (
-        <p className="text-sm text-nhlrood bg-red-50 border border-red-200 rounded p-3">
+        <p className="text-sm text-nhlrood bg-red-50 border border-red-200 rounded-lg p-3">
           {foutmelding}
         </p>
       )}
@@ -74,7 +74,7 @@ export default function VragenStap({ document, onVolgende, onTerug }) {
 
       {teTonenVragen.map((v) => (
         <div key={v.id} className="space-y-2">
-          <p className="font-medium">{v.vraag}</p>
+          <p className="font-semibold text-gray-700">{v.vraag}</p>
 
           {v.opties ? (
             <div className="flex flex-wrap gap-2">
@@ -83,10 +83,10 @@ export default function VragenStap({ document, onVolgende, onTerug }) {
                   key={optie}
                   type="button"
                   onClick={() => beantwoord(v.id, optie)}
-                  className={`px-3 py-1.5 rounded border text-sm ${
+                  className={`px-4 py-1.5 rounded-full border text-sm font-medium transition-colors ${
                     antwoorden[v.id] === optie
                       ? "bg-nhlblauw text-white border-nhlblauw"
-                      : "border-gray-300 text-gray-700"
+                      : "border-gray-300 text-gray-600 hover:border-nhlblauw hover:text-nhlblauw"
                   }`}
                 >
                   {optie}
@@ -98,22 +98,22 @@ export default function VragenStap({ document, onVolgende, onTerug }) {
               type="text"
               value={antwoorden[v.id] ?? ""}
               onChange={(e) => beantwoord(v.id, e.target.value)}
-              className="w-full border border-gray-300 rounded p-2 text-sm"
+              className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-nhlteal focus:border-transparent"
               placeholder="Vul hier je antwoord in"
             />
           )}
         </div>
       ))}
 
-      <div className="flex gap-3 pt-2">
+      <div className="flex gap-3 pt-4">
         <button
-          className="px-4 py-2 rounded border border-gray-300"
+          className="px-5 py-2 rounded-full border border-gray-300 text-sm font-medium text-gray-600 hover:bg-gray-50"
           onClick={onTerug}
         >
           Terug
         </button>
         <button
-          className="px-4 py-2 rounded bg-nhlblauw text-white"
+          className="px-5 py-2 rounded-full bg-nhlblauw text-white text-sm font-semibold hover:bg-nhlblauw/90"
           onClick={() => onVolgende(antwoorden)}
         >
           Verder

@@ -106,12 +106,15 @@ export default function ResultaatStap({ document: brondocument, antwoorden, onOp
   }, [brondocument, antwoorden]);
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-semibold">Stap 3. Resultaat</h2>
+    <div className="space-y-5">
+      <h2 className="text-lg font-bold text-nhlblauw">Resultaat</h2>
 
       {laden && (
         <div className="space-y-2">
-          <p className="text-gray-500">Bezig met het herschrijven van het document.</p>
+          <div className="flex items-center gap-3">
+            <span className="inline-block h-4 w-4 rounded-full border-2 border-nhlteal border-t-transparent animate-spin" />
+            <p className="text-gray-600">Bezig met het herschrijven van het document.</p>
+          </div>
           <p className="text-sm text-gray-400">
             Dit kan bij langere documenten een paar minuten duren, even geduld.
           </p>
@@ -119,7 +122,7 @@ export default function ResultaatStap({ document: brondocument, antwoorden, onOp
       )}
 
       {foutmelding && (
-        <div className="text-sm text-nhlrood bg-red-50 border border-red-200 rounded p-3 space-y-2">
+        <div className="text-sm text-nhlrood bg-red-50 border border-red-200 rounded-lg p-3 space-y-2">
           <p>{foutmelding}</p>
           {foutDetails && (
             <pre className="text-xs whitespace-pre-wrap text-red-800 bg-red-100 rounded p-2 overflow-x-auto">
@@ -132,13 +135,13 @@ export default function ResultaatStap({ document: brondocument, antwoorden, onOp
       {resultaat && (
         <div className="space-y-4">
           <button
-            className="px-4 py-2 rounded bg-nhlteal text-white"
+            className="px-5 py-2 rounded-full bg-nhlteal text-white text-sm font-semibold hover:bg-nhlteal/90"
             onClick={() => downloadBase64AlsBestand(resultaat.bestandBase64, resultaat.bestandsNaam)}
           >
             Download als Word bestand
           </button>
 
-          <div className="border border-gray-200 rounded p-4 bg-gray-50 text-sm whitespace-pre-wrap max-h-96 overflow-y-auto">
+          <div className="border border-gray-100 rounded-xl p-4 bg-gray-50 text-sm whitespace-pre-wrap max-h-96 overflow-y-auto">
             {resultaat.herschrevenTekst}
           </div>
         </div>
@@ -146,7 +149,7 @@ export default function ResultaatStap({ document: brondocument, antwoorden, onOp
 
       {!laden && (
         <button
-          className="px-4 py-2 rounded border border-gray-300"
+          className="px-5 py-2 rounded-full border border-gray-300 text-sm font-medium text-gray-600 hover:bg-gray-50"
           onClick={onOpnieuw}
         >
           Nieuw document

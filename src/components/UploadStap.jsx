@@ -73,25 +73,31 @@ export default function UploadStap({ onVolgende }) {
   }
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-semibold">Stap 1. Document aanleveren</h2>
-      <p className="text-gray-600">
-        Lever een Word bestand, een PDF of platte tekst aan, tot maximaal {formatGrootte(MAX_BESTANDSGROOTTE_BYTES)}.
-        De tekst wordt automatisch uit het bestand gehaald.
-      </p>
+    <div className="space-y-5">
+      <div>
+        <h2 className="text-lg font-bold text-nhlblauw">Document aanleveren</h2>
+        <p className="text-gray-500 mt-1">
+          Lever een Word bestand, een PDF of platte tekst aan, tot maximaal {formatGrootte(MAX_BESTANDSGROOTTE_BYTES)}.
+          De tekst wordt automatisch uit het bestand gehaald.
+        </p>
+      </div>
 
-      <input
-        type="file"
-        accept=".docx,.pdf,.txt"
-        disabled={bezig}
-        className="block w-full text-sm border border-gray-300 rounded p-2 disabled:opacity-50"
-        onChange={(e) => verwerkBestand(e.target.files?.[0] ?? null)}
-      />
+      <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-200 rounded-xl p-8 text-center cursor-pointer hover:border-nhlteal hover:bg-teal-50/30 transition-colors">
+        <span className="text-sm font-semibold text-nhlblauw">Kies een bestand</span>
+        <span className="text-xs text-gray-400">.docx, .pdf of .txt</span>
+        <input
+          type="file"
+          accept=".docx,.pdf,.txt"
+          disabled={bezig}
+          className="hidden"
+          onChange={(e) => verwerkBestand(e.target.files?.[0] ?? null)}
+        />
+      </label>
 
       {bezig && <p className="text-sm text-gray-500">Bezig met het lezen van het document.</p>}
 
       {foutmelding && (
-        <p className="text-sm text-nhlrood bg-red-50 border border-red-200 rounded p-3">
+        <p className="text-sm text-nhlrood bg-red-50 border border-red-200 rounded-lg p-3">
           {foutmelding}
         </p>
       )}

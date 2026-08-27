@@ -1,2 +1,2 @@
-// PATCH_12_KEY_DIAGNOSE
-export const VERSIE = "0.12.0";
+// PATCH_13_HUISSTIJL
+export const VERSIE = "0.13.0";
