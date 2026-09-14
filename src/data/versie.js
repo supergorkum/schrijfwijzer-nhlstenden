@@ -1,2 +1,2 @@
-// PATCH_19_GEEN_FLITS
-export const VERSIE = "0.19.0";
+// PATCH_20_EXTERN_EN_CHANGELOG
+export const VERSIE = "0.20.0";

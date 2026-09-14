@@ -4,6 +4,7 @@ import VragenStap from "./components/VragenStap.jsx";
 import ResultaatStap from "./components/ResultaatStap.jsx";
 import PixelStrook from "./components/PixelStrook.jsx";
 import { VERSIE } from "./data/versie.js";
+import { CHANGELOG } from "./data/changelog.js";
 
 const STAPPEN = [
   { key: "upload", label: "Document" },
@@ -15,8 +16,10 @@ export default function App() {
   const [stap, setStap] = useState("upload");
   const [document, setDocument] = useState(null);
   const [antwoorden, setAntwoorden] = useState(null);
+  const [changelogZichtbaar, setChangelogZichtbaar] = useState(false);
 
   const huidigeIndex = STAPPEN.findIndex((s) => s.key === stap);
+  const changelogAflopend = [...CHANGELOG].reverse();
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800">
@@ -28,10 +31,29 @@ export default function App() {
             </p>
             <h1 className="text-2xl font-extrabold tracking-tight">Schrijfwijzer</h1>
           </div>
-          <span className="text-xs font-medium bg-white/10 rounded-full px-3 py-1">
-            v{VERSIE}
-          </span>
+          <button
+            type="button"
+            onClick={() => setChangelogZichtbaar((huidig) => !huidig)}
+            className="text-xs font-medium bg-white/10 hover:bg-white/20 rounded-full px-3 py-1 transition-colors"
+          >
+            v{VERSIE} · wat is nieuw?
+          </button>
         </div>
+
+        {changelogZichtbaar && (
+          <div className="max-w-3xl mx-auto px-6 pb-6">
+            <div className="bg-white/10 rounded-xl p-4 space-y-3 max-h-72 overflow-y-auto">
+              {changelogAflopend.map((item) => (
+                <div key={item.versie}>
+                  <p className="text-sm font-semibold">
+                    v{item.versie} <span className="font-normal text-white/60">— {item.datum}</span>
+                  </p>
+                  <p className="text-sm text-white/90">{item.beschrijving}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </header>
       <PixelStrook />
 

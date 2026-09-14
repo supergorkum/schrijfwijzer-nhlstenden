@@ -15,10 +15,13 @@ export const CHANGELOG = [
   { versie: "0.14.0", datum: "2026-08-27", beschrijving: "Klikbare academielijst." },
   { versie: "0.15.0", datum: "2026-08-27", beschrijving: "Extra diensten als knoppen." },
   { versie: "0.16.0", datum: "2026-08-27", beschrijving: "Thinking uitgezet, meer ruimte voor het antwoord." },
+  { versie: "0.17.0", datum: "2026-08-27", beschrijving: "Afweging van de AI zichtbaar bij stap 2." },
+  { versie: "0.18.0", datum: "2026-08-27", beschrijving: "Afweging-knop bovenaan en groter gemaakt." },
+  { versie: "0.19.0", datum: "2026-08-27", beschrijving: "Een korte flits van 'geen vragen nodig' bij het laden verholpen." },
   {
-    versie: "0.17.0",
+    versie: "0.20.0",
     datum: "2026-08-27",
     beschrijving:
-      "De AI geeft nu bij elke vraag een korte reden waarom deze wel of niet gesteld wordt, zichtbaar via een inklapbaar blok bij stap 2.",
+      "Naar aanleiding van feedback: extern gerichte teksten worden nu herschreven vanuit het perspectief van de externe lezer, met een eigen opbouw en vuistregels, in plaats van in een interne, naar-studenten-en-medewerkers-gerichte toon. Daarnaast is de changelog nu zichtbaar in de app, naast het versienummer.",
   },
 ];

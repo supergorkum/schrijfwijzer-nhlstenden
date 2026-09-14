@@ -2,6 +2,7 @@ import { Document, Packer, Paragraph } from "docx";
 import { haalTakenStoreOp } from "./blobs-store.mjs";
 import { SCHRIJFWIJZER_REGELS } from "../../src/data/schrijfwijzerRegels.js";
 import { TONE_OF_VOICE } from "../../src/data/toneOfVoice.js";
+import { EXTERNE_COMMUNICATIE } from "../../src/data/externeCommunicatie.js";
 
 function bouwSysteemPrompt(antwoorden) {
   const regelsTekst = SCHRIJFWIJZER_REGELS.map((r) => `- ${r.titel}: ${r.regel}`).join("\n");
@@ -15,6 +16,7 @@ function bouwSysteemPrompt(antwoorden) {
   if (antwoorden?.herschrijfNiveau) context.push(`Gewenst niveau van ingrijpen: ${antwoorden.herschrijfNiveau}`);
 
   const gebruikToneOfVoice = antwoorden?.toneOfVoice === "The originals tone of voice";
+  const isExtern = antwoorden?.doelgroep === "Extern of corporate";
 
   let toneTekst = "";
   if (gebruikToneOfVoice) {
@@ -26,6 +28,24 @@ Toonprincipes: ${TONE_OF_VOICE.toonPrincipes.join(" ")}
 De pay-off is: ${TONE_OF_VOICE.payoff}.`;
   }
 
+  let externTekst = "";
+  if (isExtern) {
+    externTekst = `
+
+Dit document is bedoeld voor extern of corporate gebruik. Belangrijk: schrijf vanuit het perspectief van de externe lezer, dus de student, bezoeker of partner die het voor het eerst leest, niet vanuit NHL Stenden zelf, en niet in de vorm van een interne mededeling die uitlegt wat iets betekent voor studenten of medewerkers. Vermijd zinnen die de lezer aanspreken als was hij intern personeel of ingeschreven student, tenzij dat daadwerkelijk de doelgroep is.
+
+Volg deze opbouw:
+${EXTERNE_COMMUNICATIE.opbouw}
+
+Neem inhoudelijk mee waar relevant:
+${EXTERNE_COMMUNICATIE.inhoudsstappen.map((s) => `- ${s}`).join("\n")}
+
+Vuistregels:
+${EXTERNE_COMMUNICATIE.vuistregels.map((s) => `- ${s}`).join("\n")}
+
+Toets aan het einde: ${EXTERNE_COMMUNICATIE.toets}`;
+  }
+
   return `Je past de schrijfwijzer van NHL Stenden Hogeschool toe op een aangeleverd document. Dit zijn de schrijfregels waar je je aan houdt:
 
 ${regelsTekst}
@@ -33,8 +53,9 @@ ${regelsTekst}
 Context over dit specifieke document:
 ${context.join("\n") || "Geen aanvullende context meegegeven."}
 ${toneTekst}
+${externTekst}
 
-Herschrijf het aangeleverde document volledig volgens deze regels. Geef uitsluitend de herschreven tekst terug, zonder inleiding, zonder uitleg, zonder aanhalingstekens eromheen, en zonder markdown opmaak zoals sterretjes. Behoud de opbouw en alinea indeling van het origineel zoveel mogelijk.`;
+Herschrijf het aangeleverde document volledig volgens deze regels. Geef uitsluitend de herschreven tekst terug, zonder inleiding, zonder uitleg, zonder aanhalingstekens eromheen, en zonder markdown opmaak zoals sterretjes. Behoud de opbouw en alinea indeling van het origineel zoveel mogelijk, tenzij de opbouw voor extern gerichte communicatie hierboven iets anders vraagt.`;
 }
 
 function bouwDocxBuffer(tekst) {
