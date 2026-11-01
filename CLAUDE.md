@@ -12,7 +12,7 @@ diensten. De site is alleen in het Nederlands.
 
 Tot 1 november 2026 werd de site onderhouden in een chatsessie, met
 patchscripts. Sinds 1 november 2026 gebeurt dat in Claude Code. Wat er bij de
-overstap speelde staat in `OVERDRACHT-UIT-CHAT.md`.
+overstap speelde staat in `.overstap/OVERDRACHT-UIT-CHAT.md` (niet in git).
 
 ## Eerste handeling van elke sessie
 
@@ -23,10 +23,12 @@ overstap speelde staat in `OVERDRACHT-UIT-CHAT.md`.
 4. `git status --short`: staan er wijzigingen die nog niet gecommit zijn? Staan
    er wijzigingen die je niet zelf hebt gemaakt, dan werkt er misschien iemand op
    een andere computer: eerst navragen, niets overschrijven.
-5. Zodra er een `scripts/git-hooks/pre-push` is: `ls -l` daarop, staat er een x
-   bij? Google Drive bewaart het uitvoerbit niet altijd en git slaat de hook dan
-   STIL over. Herstel: `chmod +x scripts/git-hooks/*`. (Op 1 november 2026 is er
-   nog geen hook.)
+5. `ls -l scripts/git-hooks/pre-push`: staat er een x bij? Google Drive
+   bewaart het uitvoerbit niet altijd. Zonder dat bit slaat git de hook STIL
+   over en gaat een push zonder controle de deur uit. `git status` toont het als
+   een gewijzigd bestand zonder inhoudelijk verschil (old mode 100755, new mode
+   100644). Herstel: `chmod +x scripts/git-hooks/*`. Kijk ook of
+   `git config core.hooksPath` `scripts/git-hooks` zegt.
 
 Pas daarna beginnen.
 
@@ -81,33 +83,94 @@ in git.
 Een push naar `main` publiceert de site. Mislukt de bouw op Netlify, dan blijft
 de vorige versie staan.
 
+Ingericht op 1 november 2026 (v0.21.0), naar het voorbeeld van Sepupu en de
+Sandbox.
+
 **Bouwen gebeurt buiten Google Drive.** In de projectmap staat geen
 `node_modules` en dat blijft zo (afspraak van 28 oktober 2026, voor al Edgars
-sites). Draai nooit `npm install` of `npm ci` in de projectmap zelf. Bouw in een
-kopie, naar het voorbeeld van de andere sites:
-`~/Developer/schrijfwijzer-nhlstenden-build`. Er is op 1 november 2026 nog geen
-`scripts/bouwmap.mjs`, `controle` of pre-push hook; die horen er bij de
-inrichting in Code te komen, zoals bij de Sandbox (`../sandbox-nhlstenden`).
+sites). Draai nooit `npm install` of `npm ci` in de projectmap zelf.
+
+- `npm run bouwmap` (`scripts/bouwmap.mjs`) houdt
+  `~/Developer/schrijfwijzer-nhlstenden-build` gelijk aan de projectmap: alles
+  wat git kent of zou kennen, en `npm ci` zodra `package-lock.json` verandert.
+  Een andere plek kan met `SCHRIJFWIJZER_BOUWMAP`. Het script weigert een map in
+  Google Drive en een bestaande map die het niet zelf heeft gemaakt, en stopt
+  bij een tekstbestand met alleen nullen. De bouwmap is wegwerp.
+- Een nieuw pakket: `npm install` in de bouwmap, dan `package.json` en
+  `package-lock.json` terugkopieren naar de projectmap.
+- `npm run controle` (`scripts/controle.mjs`), na de eerste keer een paar
+  seconden:
+  1. `VERSIE` in `versie.js` is de nieuwste changelog-entry (de LAATSTE in de
+     lijst), hoger dan de vorige, met datum en beschrijving; de onderhoudsregel
+     staat in `src/data/onderhoudsregel.js` en wordt in `App.jsx` getoond;
+  2. bij een push: raakt de push `src/`, `netlify/`, `public/` of
+     `index.html`, dan moeten `versie.js` en `changelog.js` mee;
+  3. bouwmap bijwerken; 4. `node --check` op alle bestanden in
+     `netlify/functions`; 5. `vite build`.
+  `--snel` slaat 3 tot en met 5 over. eslint is er niet; de Schrijfwijzer heeft
+  het nooit gehad.
+- `npm run lokaal` (`scripts/lokaal.mjs`): de proef op http://127.0.0.1:5177
+  (5173 is van Sepupu en anderen, 5176 van de Sandbox), ook als preview in Code
+  (`.claude/launch.json`, naam `schrijfwijzer-nhlstenden`). Wijzigingen in de
+  projectmap lopen vanzelf mee. De Netlify Functions draaien in de proef niet en
+  er is geen proxy (de live site staat achter een wachtwoord): goed voor
+  uiterlijk en tekst, niet voor uploaden of herschrijven. `npx netlify dev`
+  draait de functies wel, maar met de echte Anthropic-sleutel en de echte
+  Blobs-opslag: niet doen zonder opzet.
+
+**Elke push gaat eerst door de controle.** `scripts/git-hooks/pre-push` draait
+`node scripts/controle.mjs --push`. Ingesteld met
+`git config core.hooksPath scripts/git-hooks` (staat in `.git/config` en reist
+via Drive mee). Valt de controle om, dan gaat de push niet door.
+`git push --no-verify` alleen als Edgar daar zelf om vraagt. Werk aan tooling
+zonder zichtbare wijziging (scripts, CLAUDE.md, .gitignore) krijgt geen
+appversie; de hook laat dat toe.
 
 **Een wijziging in Code** gaat zo:
 
 1. Bestanden rechtstreeks aanpassen in de projectmap.
-2. `VERSIE` in `src/data/versie.js` ophogen en onderaan in `CHANGELOG` in
+2. `VERSIE` in `src/data/versie.js` ophogen en ONDERAAN in `CHANGELOG` in
    `src/data/changelog.js` een entry toevoegen (`versie`, `datum`,
    `beschrijving`). De lijst loopt oplopend; de app toont hem omgekeerd. De
    changelog is zichtbaar voor gebruikers achter de versieknop in de kop, dus
-   de beschrijving is leesbaar Nederlands.
-3. Bouwen in de bouwmap (`vite build`) en bij iets zichtbaars de proef bekijken.
-4. Commit en `git push origin main`.
-5. De deploy nakijken (zie onder) en Edgar kort melden wat er live staat.
+   de beschrijving is leesbaar Nederlands. Datum in de vorm `2026-11-01`, zoals
+   de rest van de lijst. Kleine stap: +0.1.0 (0.21.0 naar 0.22.0).
+3. `npm run controle`, en bij iets zichtbaars de proef bekijken.
+4. Commit met een bericht dat zegt wat de gebruiker merkt, met de versie
+   erachter: `Onder het versienummer staat nu de onderhoudsregel (v0.21.0)`.
+   Dan `git push origin main`. Pushen werkt vanuit Code: git gebruikt de
+   aanmelding van `gh` (supergorkum) via de sleutelhanger.
+5. De deploy nakijken en Edgar kort melden wat er live staat.
 
-**De deploy nakijken.** Via de Netlify-koppeling:
+**De deploy nakijken.** `curl` op de live site geeft altijd 401, door het
+sitewachtwoord; de inhoud is met curl niet te lezen. Via de Netlify-koppeling:
 `netlify-project-services-reader` met `get-project` en het site-id geeft het id
 van de huidige deploy; `netlify-deploy-services-reader` met `get-deploy` geeft
 `state`, `commit_ref` en `published_at`. Is `state` `ready` en `commit_ref`
 gelijk aan `git rev-parse HEAD`, dan staat de wijziging live. `deploy_source`
-zegt `api`, ook bij een automatische bouw vanaf GitHub; dat klopt gewoon. Vul
-het sitewachtwoord nooit zelf in.
+zegt `api`, ook bij een automatische bouw vanaf GitHub; dat klopt gewoon. De
+inhoud zelf zien kan via `screenshot_url` in hetzelfde antwoord: een openbare
+schermafbeelding van de eerste pagina, gemaakt door Netlify zelf (achter het
+wachtwoord langs). Downloaden met curl, met `sips -s format png` omzetten en
+bekijken. Vul het sitewachtwoord nooit zelf in.
+
+**Geleerd bij de overstap (1 november 2026).**
+- De overdracht is niet door de oude chat geschreven maar in Code samengesteld
+  uit de repo, git en Netlify. Afspraken die alleen in die chat stonden, kunnen
+  ontbreken.
+- De push van v0.21.0 (`5db20a8`) werd vanzelf gebouwd en stond in ruim een
+  halve minuut live (deploy `6ae7bc3589fa9d7202061afa`). De onderhoudsregel was
+  te zien op de schermafbeelding van Netlify.
+- De GitHub-repo is openbaar (`gh repo view` zegt PUBLIC). Bewust niet
+  veranderd: dat is een instelling bij de hosting en aan Edgar.
+- npm 11 meldt bij `npm ci` dat de installatiescripts van esbuild en fsevents
+  niet zijn goedgekeurd. De bouw slaagt toch; geen actie nodig zolang dat zo
+  blijft.
+- `version` in package.json (0.7.0) is bewust niet aangepast; de appversie is
+  `VERSIE`.
+- `.env` met de sleutels is blijven staan waar hij stond (in `.gitignore`, nooit
+  gecommit). Er is geen `.sleutels/`-map nodig gebleken; die staat wel in
+  `.gitignore` voor later.
 
 **Niet tegelijk op twee computers.** Git draait in een Google Drive-map. Werken
 de MacBook en de HUB tegelijk in dezelfde map, dan kan Drive `.git` door elkaar
@@ -116,6 +179,30 @@ lijkt terwijl het inhoud hoort te hebben nooit als leeg (Drive levert soms een
 bestand met alleen nullen als het nog niet is binnengehaald), en schrijf er
 niets overheen. Geeft `git commit` een fout over een ontbrekend object, kijk dan
 in `../sepupu/CLAUDE.md` hoe dat daar op 1 november 2026 is opgelost.
+
+## Bekende eigenaardigheden en open punten
+
+Overgenomen uit de overdracht; wat hier staat geldt tot het is opgelost.
+
+- **Repo openbaar.** Kennisbank, prompts en de pdf's in `bronnen/` zijn voor
+  iedereen te lezen. Of dat zo moet blijven, beslist Edgar.
+- **Blobs worden niet opgeruimd.** Elke herschrijftaak, met de herschreven
+  tekst, blijft in `schrijfwijzer-taken` staan.
+- **`blobs-store.mjs`** staat zonder `_` in `netlify/functions` en wordt daardoor
+  ook als losse functie uitgerold. Hernoemen naar `_blobs-store.mjs` en de twee
+  imports aanpassen maakt het netjes.
+- **Model `claude-sonnet-5`.** Werkte op 14 september 2026. Wisselen naar een
+  nieuwer model alleen met meten: `bepaal-vragen` is een gewone functie met een
+  tijdslimiet van ongeveer 26 seconden.
+- **De changelog** heeft voor 0.1.0 tot en met 0.20.0 allemaal de datum
+  2026-08-27, ook waar dat niet klopt (0.20.0 is van 14 september). Geschiedenis,
+  blijft zo.
+- **`deno.lock`** staat in git sinds patch 20, terwijl het project npm gebruikt.
+  Onschuldig.
+- **Kopieën elders op Drive** (`Codex - Charly/`, `Gemini Code/`) zijn niet
+  bijgewerkt. Deze map is de werkmap.
+- **Netlify AI Gateway** gaf in patch 11 en 12 een "ongeldige key". Wordt er ooit
+  een AI-extensie aangezet in Netlify, kijk dan eerst hier.
 
 ## Sleutels en wachtwoorden
 
