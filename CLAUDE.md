@@ -59,8 +59,8 @@ Pas daarna beginnen.
 - Netlify-site `schrijfwijzer-nhlstenden`, id
   `820bf11b-984e-4339-bf4f-350ffdc6eff7`, team-id `6a047d5b4965c04ab89fec76`.
   Blobs en functies in regio us-east-2.
-- GitHub: `supergorkum/schrijfwijzer-nhlstenden`, productietak `main`. Let op:
-  Netlify meldt deze repo als **openbaar** (zie de overdracht).
+- GitHub: `supergorkum/schrijfwijzer-nhlstenden`, productietak `main`. De repo is
+  **openbaar**, bewust (zie Bekende eigenaardigheden).
 - Live: https://schrijfwijzer-nhlstenden.netlify.app, afgeschermd met een
   sitewachtwoord van Netlify. Een kale `curl` geeft daarom 401; dat is geen
   storing.
@@ -161,8 +161,8 @@ bekijken. Vul het sitewachtwoord nooit zelf in.
 - De push van v0.21.0 (`5db20a8`) werd vanzelf gebouwd en stond in ruim een
   halve minuut live (deploy `6ae7bc3589fa9d7202061afa`). De onderhoudsregel was
   te zien op de schermafbeelding van Netlify.
-- De GitHub-repo is openbaar (`gh repo view` zegt PUBLIC). Bewust niet
-  veranderd: dat is een instelling bij de hosting en aan Edgar.
+- De GitHub-repo is openbaar (`gh repo view` zegt PUBLIC). Edgar heeft op
+  1 november 2026 besloten dat zo te laten.
 - npm 11 meldt bij `npm ci` dat de installatiescripts van esbuild en fsevents
   niet zijn goedgekeurd. De bouw slaagt toch; geen actie nodig zolang dat zo
   blijft.
@@ -184,8 +184,10 @@ in `../sepupu/CLAUDE.md` hoe dat daar op 1 november 2026 is opgelost.
 
 Overgenomen uit de overdracht; wat hier staat geldt tot het is opgelost.
 
-- **Repo openbaar.** Kennisbank, prompts en de pdf's in `bronnen/` zijn voor
-  iedereen te lezen. Of dat zo moet blijven, beslist Edgar.
+- **Repo openbaar, en dat blijft zo** (besluit van Edgar, 1 november 2026).
+  Kennisbank, prompts en de pdf's in `bronnen/` zijn voor iedereen te lezen.
+  Daarom: nooit een sleutel, wachtwoord of `.env` in een commit, en geen
+  documenten van gebruikers in de repo.
 - **Blobs worden niet opgeruimd.** Elke herschrijftaak, met de herschreven
   tekst, blijft in `schrijfwijzer-taken` staan.
 - **`blobs-store.mjs`** staat zonder `_` in `netlify/functions` en wordt daardoor
