@@ -94,17 +94,23 @@ export async function handler(event) {
 
     const systeemPrompt = bouwSysteemPrompt(antwoorden || {});
 
+    // Model Claude Opus 5.5 (sinds 0.22.0), effort "low", het denken telt mee
+    // in max_tokens. Dit is een Background Function, dus de tijdslimiet van
+    // een gewone functie geldt hier niet. Bij een weigering probeert de API
+    // het zelf op een ander model (fallbacks "default").
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "x-api-key": apiKey,
         "anthropic-version": "2023-06-01",
+        "anthropic-beta": "server-side-fallback-2026-07-01",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-5",
-        max_tokens: 16000,
-        thinking: { type: "disabled" },
+        model: "claude-opus-5-5",
+        max_tokens: 16000 + 4000,
+        output_config: { effort: "low" },
+        fallbacks: "default",
         system: systeemPrompt,
         messages: [{ role: "user", content: tekst }],
       }),
@@ -123,6 +129,11 @@ export async function handler(event) {
     }
 
     const data = await response.json();
+    if (data.stop_reason === "refusal") {
+      console.error("herschrijf-document-background: Claude weigerde: " + JSON.stringify(data.stop_details || {}));
+      await store.setJSON(jobId, { status: "fout", fout: "De AI wilde deze tekst niet herschrijven." });
+      return { statusCode: 200 };
+    }
     const herschrevenTekst = data.content?.find((blok) => blok.type === "text")?.text?.trim();
 
     if (!herschrevenTekst) {

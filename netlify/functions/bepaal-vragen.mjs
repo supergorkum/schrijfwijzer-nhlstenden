@@ -45,6 +45,11 @@ Lees het aangeleverde document en beoordeel voor elk van deze vragen, dus voor a
 Antwoord uitsluitend met geldige JSON in dit formaat, zonder verdere uitleg, met exact één regel per vraag uit de lijst:
 {"beoordelingen": [{"id": "typeMiddel", "relevant": true, "reden": "korte reden hier"}, {"id": "doelgroep", "relevant": false, "reden": "korte reden hier"}]}`;
 
+  // Model Claude Opus 5.5 (sinds 0.22.0). Het denkt altijd eerst; effort "low"
+  // houdt dat kort, zodat het antwoord ruim binnen de tijdslimiet van een
+  // gewone Netlify-functie blijft (ongeveer 26 seconden). Het denken telt mee
+  // in max_tokens, daarom 4000 extra. Weigert het model, dan probeert de API
+  // het zelf op een ander model (fallbacks "default").
   try {
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -52,11 +57,13 @@ Antwoord uitsluitend met geldige JSON in dit formaat, zonder verdere uitleg, met
         "Content-Type": "application/json",
         "x-api-key": apiKey,
         "anthropic-version": "2023-06-01",
+        "anthropic-beta": "server-side-fallback-2026-07-01",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-5",
-        max_tokens: 1200,
-        thinking: { type: "disabled" },
+        model: "claude-opus-5-5",
+        max_tokens: 1200 + 4000,
+        output_config: { effort: "low" },
+        fallbacks: "default",
         system: systeemPrompt,
         messages: [{ role: "user", content: stukTekst }],
       }),
@@ -72,7 +79,11 @@ Antwoord uitsluitend met geldige JSON in dit formaat, zonder verdere uitleg, met
     }
 
     const data = await response.json();
-    const tekstAntwoord = data.content?.find((blok) => blok.type === "text")?.text ?? "";
+    if (data.stop_reason === "refusal") {
+      console.error("bepaal-vragen: Claude weigerde: " + JSON.stringify(data.stop_details || {}));
+    }
+    const tekstAntwoord =
+      data.stop_reason === "refusal" ? "" : data.content?.find((blok) => blok.type === "text")?.text ?? "";
 
     let beoordelingen;
     try {

@@ -30,4 +30,10 @@ export const CHANGELOG = [
     beschrijving:
       "De Schrijfwijzer wordt vanaf nu onderhouden in Claude Code. Onder het versienummer staat daarom in kleine letters een onderhoudsregel. Verder verandert er niets aan de werking.",
   },
+  {
+    versie: "0.22.0",
+    datum: "2026-11-01",
+    beschrijving:
+      "De Schrijfwijzer gebruikt nu een nieuwer AI-model voor het kiezen van de vragen en het herschrijven. Het bepalen van de vragen duurt een seconde langer, de werking blijft verder hetzelfde.",
+  },
 ];
