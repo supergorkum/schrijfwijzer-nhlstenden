@@ -51,10 +51,29 @@ Pas daarna beginnen.
   `toneOfVoice.js`, `externeCommunicatie.js`, `academies.js`, `vragen.js`. De
   functies importeren die bestanden rechtstreeks uit `src/`. De bron-pdf's
   (schrijfwijzer, brandmanual, styleguide The originals) staan in `bronnen/`.
-- AI: rechtstreeks `fetch` naar `api.anthropic.com/v1/messages`, model
-  `claude-sonnet-5`, `thinking: disabled`, `max_tokens` 1200 voor de vragen en
-  16000 voor het herschrijven. Geen SDK, geen Netlify AI Gateway (die gaf in
-  patch 11 en 12 een "ongeldige key" en is bewust uitgezet).
+- AI: rechtstreeks `fetch` naar `api.anthropic.com/v1/messages`. Sinds 0.22.0
+  (1 november 2026) Claude Opus 5.5 (`claude-opus-5-5`), effort `low`,
+  `fallbacks: "default"` met header
+  `anthropic-beta: server-side-fallback-2026-07-01`, geen `thinking`-veld (het
+  model denkt altijd; `disabled` geeft een 400) en geen `temperature`.
+  `max_tokens` is 1200 + 4000 voor de vragen en 16000 + 4000 voor het
+  herschrijven, omdat het denken meetelt. Een weigering
+  (`stop_reason: "refusal"`) gaat naar `console.error` en dus het functielog.
+  Daarvoor was het `claude-sonnet-5` met thinking uit. Geen SDK, geen Netlify AI
+  Gateway (die gaf in patch 11 en 12 een "ongeldige key" en is bewust
+  uitgezet).
+- Gemeten op 1 november 2026, lokaal met dezelfde sleutel en een korte mail
+  van vijf regels: `bepaal-vragen` 3,5 tot 4,2 seconden met Sonnet 5, 5,1 tot
+  5,4 seconden met Opus 5.5; herschrijven 1,6 seconden. `bepaal-vragen` is een
+  gewone functie met een limiet van ongeveer 26 seconden en leest hoogstens
+  6000 tekens: effort niet verhogen zonder opnieuw te meten.
+- Testen zonder iets op te slaan: `bepaal-vragen` slaat niets op en kan
+  lokaal direct worden aangeroepen (`import { handler }` uit de functie, met
+  `.env` geladen via `set -a; . .env; set +a`). Het herschrijven bundel je met
+  esbuild uit de bouwmap met `--alias:@netlify/blobs=<nep-opslag in geheugen>`,
+  zodat er niets in de echte Blobs belandt. Kost een paar cent per aanroep.
+  Live testen vanuit Chrome kan pas als Edgar daar eenmaal is aangemeld op de
+  site (zie onder).
 - Bouwen: `npm run build` (vite build), publicatiemap `dist`.
 - Netlify-site `schrijfwijzer-nhlstenden`, id
   `820bf11b-984e-4339-bf4f-350ffdc6eff7`, team-id `6a047d5b4965c04ab89fec76`.
@@ -193,9 +212,6 @@ Overgenomen uit de overdracht; wat hier staat geldt tot het is opgelost.
 - **`blobs-store.mjs`** staat zonder `_` in `netlify/functions` en wordt daardoor
   ook als losse functie uitgerold. Hernoemen naar `_blobs-store.mjs` en de twee
   imports aanpassen maakt het netjes.
-- **Model `claude-sonnet-5`.** Werkte op 14 september 2026. Wisselen naar een
-  nieuwer model alleen met meten: `bepaal-vragen` is een gewone functie met een
-  tijdslimiet van ongeveer 26 seconden.
 - **De changelog** heeft voor 0.1.0 tot en met 0.20.0 allemaal de datum
   2026-08-27, ook waar dat niet klopt (0.20.0 is van 14 september). Geschiedenis,
   blijft zo.
@@ -218,7 +234,14 @@ commit.
   en `NETLIFY_SITE_ID` zijn nodig omdat de Blobs-store handmatig wordt
   geconfigureerd (patch 09); zonder die twee valt `blobs-store.mjs` terug op
   automatische herkenning.
-- Sitewachtwoord: in Netlify onder de toegangsinstellingen van de site.
+- Sitewachtwoord: in Netlify onder de toegangsinstellingen van de site. De hele
+  site staat erachter (`requiresPassword: true`, nagekeken 1 november 2026).
+  Binnen de site zelf zijn er geen wachtwoorden, pincodes of inlogschermen; dat
+  hoort zo te blijven (afspraak van Edgar voor zijn demo's, 1 november 2026).
+- Edgars Chrome (Claude in Chrome) is aangemeld op Netlify, maar op
+  1 november 2026 NIET op de site zelf: die toonde het wachtwoordscherm. Vul het
+  sitewachtwoord nooit zelf in; vraag Edgar zich een keer aan te melden als een
+  live test nodig is.
 - Pushen naar GitHub werkt vanuit Code via `gh` (ingelogd als supergorkum), net
   als bij de andere sites.
 
