@@ -5,6 +5,7 @@ import ResultaatStap from "./components/ResultaatStap.jsx";
 import PixelStrook from "./components/PixelStrook.jsx";
 import { VERSIE } from "./data/versie.js";
 import { CHANGELOG } from "./data/changelog.js";
+import { ONDERHOUDSREGEL } from "./data/onderhoudsregel.js";
 
 const STAPPEN = [
   { key: "upload", label: "Document" },
@@ -31,13 +32,16 @@ export default function App() {
             </p>
             <h1 className="text-2xl font-extrabold tracking-tight">Schrijfwijzer</h1>
           </div>
-          <button
-            type="button"
-            onClick={() => setChangelogZichtbaar((huidig) => !huidig)}
-            className="text-xs font-medium bg-white/10 hover:bg-white/20 rounded-full px-3 py-1 transition-colors"
-          >
-            v{VERSIE} · wat is nieuw?
-          </button>
+          <div className="flex flex-col items-end gap-1">
+            <button
+              type="button"
+              onClick={() => setChangelogZichtbaar((huidig) => !huidig)}
+              className="text-xs font-medium bg-white/10 hover:bg-white/20 rounded-full px-3 py-1 transition-colors"
+            >
+              v{VERSIE} · wat is nieuw?
+            </button>
+            <p className="text-[10px] text-white/60 pr-3">{ONDERHOUDSREGEL}</p>
+          </div>
         </div>
 
         {changelogZichtbaar && (

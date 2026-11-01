@@ -3,3 +3,6 @@ dist
 .netlify
 .env
 .DS_Store
+.sleutels/
+.overstap/
+.claude/settings.local.json

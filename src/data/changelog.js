@@ -24,4 +24,10 @@ export const CHANGELOG = [
     beschrijving:
       "Naar aanleiding van feedback: extern gerichte teksten worden nu herschreven vanuit het perspectief van de externe lezer, met een eigen opbouw en vuistregels, in plaats van in een interne, naar-studenten-en-medewerkers-gerichte toon. Daarnaast is de changelog nu zichtbaar in de app, naast het versienummer.",
   },
+  {
+    versie: "0.21.0",
+    datum: "2026-11-01",
+    beschrijving:
+      "De Schrijfwijzer wordt vanaf nu onderhouden in Claude Code. Onder het versienummer staat daarom in kleine letters een onderhoudsregel. Verder verandert er niets aan de werking.",
+  },
 ];
