@@ -36,4 +36,10 @@ export const CHANGELOG = [
     beschrijving:
       "De Schrijfwijzer gebruikt nu een nieuwer AI-model voor het kiezen van de vragen en het herschrijven. Het bepalen van de vragen duurt een seconde langer, de werking blijft verder hetzelfde.",
   },
+  {
+    versie: "0.23.0",
+    datum: "2026-11-02",
+    beschrijving:
+      "Toegang loopt nu via de portfolio van A.I. 2 Business. Wie daar is ingelogd en op de Schrijfwijzer klikt, komt direct binnen, zonder apart wachtwoord. Een losse link stuurt eerst naar het inlogscherm van de portfolio.",
+  },
 ];

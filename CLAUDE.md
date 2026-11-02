@@ -234,8 +234,16 @@ commit.
   en `NETLIFY_SITE_ID` zijn nodig omdat de Blobs-store handmatig wordt
   geconfigureerd (patch 09); zonder die twee valt `blobs-store.mjs` terug op
   automatische herkenning.
-- Sitewachtwoord: in Netlify onder de toegangsinstellingen van de site. De hele
-  site staat erachter (`requiresPassword: true`, nagekeken 1 november 2026).
+- **Toegang via A.I. 2 Business (sinds v0.23.0, 2 november 2026).** Het
+  Netlify-sitewachtwoord staat uit. In plaats daarvan bewaakt
+  `netlify/edge-functions/a2b-poort.js` de site: alleen met een doorgangspas
+  van de portfolio (https://edgar-van-gorkum.netlify.app, ingelogd) kom je
+  binnen; anders stuurt het slot naar het inlogscherm van de portfolio. Bron en
+  uitleg: `portfolio-ai2business/demo-slot/a2b-poort.js` en
+  `ontwerp-doorgang-demos.md`. **Open punt:** de serverfuncties onder
+  `/.netlify/functions/` (onder meer het herschrijven met de Anthropic-sleutel)
+  vallen niet onder dit slot en zijn zonder eigen controle bereikbaar. Edgar
+  heeft dat geaccepteerd; ze krijgen later een eigen controle.
   Binnen de site zelf zijn er geen wachtwoorden, pincodes of inlogschermen; dat
   hoort zo te blijven (afspraak van Edgar voor zijn demo's, 1 november 2026).
 - Edgars Chrome (Claude in Chrome) is aangemeld op Netlify, maar op

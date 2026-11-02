@@ -1,2 +1,2 @@
 // PATCH_20_EXTERN_EN_CHANGELOG
-export const VERSIE = "0.22.0";
+export const VERSIE = "0.23.0";
